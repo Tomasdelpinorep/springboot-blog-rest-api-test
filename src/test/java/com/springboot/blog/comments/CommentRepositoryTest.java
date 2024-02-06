@@ -1,20 +1,14 @@
 package com.springboot.blog.comments;
 
 import com.springboot.blog.entity.Comment;
-import com.springboot.blog.entity.Post;
-import com.springboot.blog.payload.CommentDto;
 import com.springboot.blog.repository.CommentRepository;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.ui.ModelMap;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -43,14 +37,18 @@ class CommentRepositoryTest {
             .withPassword("testPassword")
             .withDatabaseName("testDB");
 
-
-    static CommentDto c = new CommentDto();
-
     @Test
-    void findPostByIdTest(){
+    void findPostByValidIdTest(){
         List<Comment> result = commentRepository.findByPostId(1L);
 
         assertEquals(5, result.size());
         assertEquals(result.get(0).getName(), "Creighton");
+    }
+
+    @Test
+    void findPostByInvalidIdTest(){
+        List<Comment> result = commentRepository.findByPostId(10L);
+
+        assertEquals(0, result.size());
     }
 }
