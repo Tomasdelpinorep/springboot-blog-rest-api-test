@@ -65,7 +65,9 @@ class CommentServiceImplTest {
 
     @Test
     void createComment_WhenPostNotFound_Test(){
-        //perezote mañana lo hago
+        Post wrongPost = Mockito.mock(Post.class);
+
+        assertThrows(ResourceNotFoundException.class, () -> commentService.createComment(wrongPost.getId(),c));
     }
 
     @Test
@@ -104,12 +106,16 @@ class CommentServiceImplTest {
 
     @Test
     void getCommentById_WhenPostNotFound_Test(){
-        //pa mañana
+        Post wrongPost = Mockito.mock(Post.class);
+
+        assertThrows(ResourceNotFoundException.class, () -> commentService.getCommentById(wrongPost.getId(), c.getId()));
     }
 
     @Test
     void getCommentById_WhenCommentNotFound_Test(){
-        //pa mañana
+        Comment wrongComment = Mockito.mock(Comment.class);
+
+        assertThrows(ResourceNotFoundException.class, ()-> commentService.getCommentById(p.getId(), wrongComment.getId()));
     }
 
     @Test
