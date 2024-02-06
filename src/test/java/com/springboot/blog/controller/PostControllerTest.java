@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.blog.entity.Category;
 import com.springboot.blog.entity.Post;
+import com.springboot.blog.exception.ResourceNotFoundException;
 import com.springboot.blog.payload.CommentDto;
 import com.springboot.blog.payload.PostDto;
 import com.springboot.blog.payload.PostResponse;
@@ -36,8 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -58,7 +58,6 @@ class PostControllerTest {
     private Category category;
     private PostDto postDto;
     private Post post;
-//    private PostDto postDto2;
 
     ModelMapper mapper = new ModelMapper();
 
@@ -67,15 +66,11 @@ class PostControllerTest {
 
         category = new Category();
         postDto = new PostDto();
-//        postDto2 = new PostDto();
         post = new Post();
-
-        CommentDto commentDto = new CommentDto();
 
         category = new Category();
         category.setId(1L);
         category.setName("Example Category");
-
 
         postDto.setId(1L);
         postDto.setTitle("titulo 1");
@@ -83,25 +78,12 @@ class PostControllerTest {
         postDto.setContent("wefewf");
         postDto.setCategoryId(category.getId());
 
-//        PostDto postDto2 = new PostDto();
-//        postDto2.setId(2L);
-//        postDto2.setTitle("titulo 2");
-//        postDto2.setDescription("eferfewferfergfef");
-//        postDto2.setContent("wefewf");
-//        postDto2.setCategoryId(category.getId());
-
         post = mapper.map(postDto, Post.class);
     }
 
     @Test
     @WithMockUser(username = "Fran", roles = {"ADMIN"})
     void createPost() throws Exception {
-//        PostDto postDtoDB = new PostDto();
-//        postDtoDB.setId(1L);
-//        postDtoDB.setTitle("titulo 1");
-//        postDtoDB.setDescription("efer");
-//        postDtoDB.setContent("wefewf");
-//        postDtoDB.setCategoryId(category.getId());
 
         when(postService.createPost(any())).thenReturn(postDto);
 
@@ -177,25 +159,45 @@ class PostControllerTest {
     void getPostByIdNotFound() throws Exception {
 
 
-//        when(postService.getPostById(anyLong())).thenReturn();
-//
-//        mvc.perform(get("/api/posts/{id}", 1L)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                )
-//                .andExpect(status().isNotFound());
+        when(postService.getPostById(anyLong())).thenThrow(new ResourceNotFoundException("Post", "id", 1));
+
+        mvc.perform(get("/api/posts/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isNotFound());
 
     }
 
 
     @Test
-    void updatePost() {
+    @WithMockUser(username = "Fran", roles = {"ADMIN"})
+    void updatePost() throws Exception{
 
-        
+        PostDto postDtoEdit = new PostDto();
+        postDtoEdit.setId(1L);
+        postDtoEdit.setTitle("titulo editado");
+        postDtoEdit.setDescription("eferfdvdvdffdvdbtdbtbtrbtb");
+        postDtoEdit.setContent("wefewf");
+        postDtoEdit.setCategoryId(category.getId());
+
+        when(postService.updatePost(postDtoEdit, 1L)).thenReturn(postDtoEdit);
+
+        mvc.perform(put("/api/posts/{id}", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(this.objectMapper.writeValueAsString(postDtoEdit))
+        )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", notNullValue()))
+                .andExpect(jsonPath("$.title", is("titulo editado")));
 
     }
 
     @Test
     void deletePost() {
+
+
+
     }
 
     @Test
