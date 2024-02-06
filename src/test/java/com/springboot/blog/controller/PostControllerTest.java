@@ -21,15 +21,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.awt.print.Pageable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -52,6 +56,7 @@ class PostControllerTest {
     private Category category;
     private PostDto postDto;
     private Post post;
+//    private PostDto postDto2;
 
     ModelMapper mapper = new ModelMapper();
 
@@ -87,7 +92,7 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "Fran", roles = {"USER", "ADMIN"})
+    @WithMockUser(username = "Fran", roles = {"ADMIN"})
     void createPost() throws Exception {
 //        PostDto postDtoDB = new PostDto();
 //        postDtoDB.setId(1L);
@@ -112,7 +117,7 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "Fran", roles = {"USER", "ADMIN"})
+    @WithMockUser(username = "Fran", roles = {"ADMIN"})
     void createPostBadRequest() throws Exception {
         PostDto postDtoDB = new PostDto();
         postDtoDB.setId(1L);
@@ -134,29 +139,57 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "Fran", roles = {"USER", "ADMIN"})
+    @WithMockUser(username = "Fran", roles = {"ADMIN"})
     void getAllPosts() throws Exception {
 
-//        List.of(postDto, postDto2);
+        PostResponse postResponse = new PostResponse(List.of(postDto), 0, 10, 2, 1, true);
 
-//        PostResponse postResponse = new PostResponse(, 0, 10, 2, 1, true);
+        when(postService.getAllPosts(0, 10, "id", "asc")).thenReturn(postResponse);
 
-//        when(postService.getAllPosts(0, 10, "title", "asc")).thenReturn();
-//
-//        mvc.perform(get("/api/posts")
-//                .contentType(MediaType.APPLICATION_JSON)
-//        )
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$", hasSize(2)));
-//
+        MvcResult mvcResult = mvc.perform(get("/api/posts")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isOk())
+                .andReturn();
+        System.out.println(mvcResult.getResponse().getContentAsString());
+        String actualResponse = mvcResult.getResponse().getContentAsString();
+        assertThat(actualResponse).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(postResponse));
+
+
     }
 
     @Test
-    void getPostById() {
+    void getPostById() throws Exception {
+
+        when(postService.getPostById(anyLong())).thenReturn(postDto);
+
+        mvc.perform(get("/api/posts/{id}", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", notNullValue()));
+
     }
+
+    @Test
+    void getPostByIdNotFound() throws Exception {
+
+
+//        when(postService.getPostById(anyLong())).thenReturn();
+//
+//        mvc.perform(get("/api/posts/{id}", 1L)
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                )
+//                .andExpect(status().isNotFound());
+
+    }
+
 
     @Test
     void updatePost() {
+
+        
+
     }
 
     @Test
