@@ -123,6 +123,27 @@ class PostControllerTest {
     }
 
     @Test
+    void createPostBadRequestUnauthorized() throws Exception {
+        PostDto postDtoDB = new PostDto();
+        postDtoDB.setId(1L);
+        postDtoDB.setTitle("titulo 1");
+        postDtoDB.setDescription("eferf");
+        postDtoDB.setContent("wefewf");
+        postDtoDB.setCategoryId(category.getId());
+
+        when(postService.createPost(any())).thenReturn(postDtoDB);
+
+        mvc.perform(post("/api/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(postDtoDB))
+                )
+                .andExpect(status().isUnauthorized());
+
+
+    }
+
+    @Test
     @WithMockUser(username = "Fran", roles = {"ADMIN"})
     void getAllPosts() throws Exception {
 
@@ -135,9 +156,7 @@ class PostControllerTest {
         )
                 .andExpect(status().isOk())
                 .andReturn();
-        System.out.println(mvcResult.getResponse().getContentAsString());
-        String actualResponse = mvcResult.getResponse().getContentAsString();
-        assertThat(actualResponse).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(postResponse));
+        assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(postResponse));
 
 
     }
@@ -194,13 +213,60 @@ class PostControllerTest {
     }
 
     @Test
-    void deletePost() {
+//    @WithMockUser(username = "Fran", roles = {"ADMIN"})
+    void updatePostUnauthorized() throws Exception{
 
+        PostDto postDtoEdit = new PostDto();
+        postDtoEdit.setId(1L);
+        postDtoEdit.setTitle("titulo editado");
+        postDtoEdit.setDescription("eferfdvdvdffdvdbtdbtbtrbtb");
+        postDtoEdit.setContent("wefewf");
+        postDtoEdit.setCategoryId(category.getId());
 
+        when(postService.updatePost(postDtoEdit, 1L)).thenReturn(postDtoEdit);
+
+        mvc.perform(put("/api/posts/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(postDtoEdit))
+                )
+                .andExpect(status().isUnauthorized());
 
     }
 
     @Test
-    void getPostsByCategory() {
+    @WithMockUser(username = "Fran", roles = {"ADMIN"})
+    void deletePost() throws Exception {
+
+        mvc.perform(delete("/api/posts/{id}", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    void deletePostUnauthorized() throws Exception {
+
+        mvc.perform(delete("/api/posts/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Test
+    void getPostsByCategory() throws Exception {
+
+        when(postService.getPostsByCategory(anyLong())).thenReturn(List.of(postDto));
+
+        MvcResult mvcResult = mvc.perform(get("/api/posts/category/{id}", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertThat(mvcResult.getResponse().getContentAsString()).isEqualToIgnoringWhitespace(objectMapper.writeValueAsString(List.of(postDto)));
+
     }
 }
