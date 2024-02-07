@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles({"test"})
 @Testcontainers
+@Sql(value = "classpath:import-category.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "classpath:import-posts.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "classpath:import-comments.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "classpath:delete-comments.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -39,7 +40,7 @@ class CommentRepositoryTest {
 
     @Test
     void findPostByValidIdTest(){
-        List<Comment> result = commentRepository.findByPostId(1L);
+        List<Comment> result = commentRepository.findByPostId(1000L);
 
         assertEquals(5, result.size());
         assertEquals(result.get(0).getName(), "Creighton");
