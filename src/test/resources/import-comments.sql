@@ -1,5 +1,5 @@
-insert into comments (id, name, email, body, post_id) values (1, 'Creighton', 'cpfaffe0@elpais.com', 'commodo placerat praesent blandit nam nulla integer pede justo lacinia eget tincidunt eget tempus vel', 1);
-insert into comments (id, name, email, body, post_id) values (2, 'Claybourne', 'ccorston1@admin.ch', 'amet nunc viverra dapibus nulla suscipit ligula in lacus curabitur at ipsum', 1);
-insert into comments (id, name, email, body, post_id) values (3, 'Callie', 'cguillet2@toplist.cz', 'arcu sed augue aliquam erat volutpat in congue etiam justo etiam pretium iaculis justo in hac habitasse platea dictumst', 1);
-insert into comments (id, name, email, body, post_id) values (4, 'Dory', 'dgrioli3@bravesites.com', 'quis tortor id nulla ultrices aliquet maecenas leo odio condimentum id luctus', 1);
-insert into comments (id, name, email, body, post_id) values (5, 'Lorant', 'lpolo4@moonfruit.com', 'sapien placerat ante nulla justo aliquam quis turpis eget elit sodales scelerisque mauris sit amet eros', 1);
+insert into comments (id, name, email, body, post_id) values (1, 'Creighton', 'cpfaffe0@elpais.com', 'commodo placerat praesent blandit nam nulla integer pede justo lacinia eget tincidunt eget tempus vel', 1000);
+insert into comments (id, name, email, body, post_id) values (2, 'Claybourne', 'ccorston1@admin.ch', 'amet nunc viverra dapibus nulla suscipit ligula in lacus curabitur at ipsum', 1000);
+insert into comments (id, name, email, body, post_id) values (3, 'Callie', 'cguillet2@toplist.cz', 'arcu sed augue aliquam erat volutpat in congue etiam justo etiam pretium iaculis justo in hac habitasse platea dictumst', 1000);
+insert into comments (id, name, email, body, post_id) values (4, 'Dory', 'dgrioli3@bravesites.com', 'quis tortor id nulla ultrices aliquet maecenas leo odio condimentum id luctus', 1000);
+insert into comments (id, name, email, body, post_id) values (5, 'Lorant', 'lpolo4@moonfruit.com', 'sapien placerat ante nulla justo aliquam quis turpis eget elit sodales scelerisque mauris sit amet eros', 1000);
