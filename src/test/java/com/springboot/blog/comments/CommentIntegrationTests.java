@@ -1,15 +1,17 @@
 package com.springboot.blog.comments;
 import com.springboot.blog.entity.Comment;
+import com.springboot.blog.entity.Post;
 import com.springboot.blog.payload.CommentDto;
+import com.springboot.blog.repository.PostRepository;
 import com.springboot.blog.security.JwtTokenProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,21 +20,15 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Objects;
+
+import java.util.*;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles({"test"})
-@Testcontainers
+@ActiveProfiles({"integration-test"})
 @Sql(value = "classpath:import-users.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-@Sql(value = "classpath:import-roles.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(value = "classpath:import-category.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "classpath:import-posts.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "classpath:import-comments.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "classpath:delete-comments.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -40,17 +36,15 @@ public class CommentIntegrationTests {
     @Autowired
     TestRestTemplate restTemplate;
     @Autowired
+    PostRepository postRepository;
+    @Autowired
     JwtTokenProvider jwtTokenProvider;
+    @Autowired
+    ModelMapper mapper;
+
     String token;
     CommentDto c = new CommentDto();
     HttpHeaders header = new HttpHeaders();
-
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer(DockerImageName.parse("postgres:16-alpine"))
-            .withUsername("postgres")
-            .withPassword("12345678")
-            .withDatabaseName("test");
 
     @BeforeEach
     void setup(){
@@ -71,8 +65,9 @@ public class CommentIntegrationTests {
     void getCommentsByPostId_WithValidId_Test(){
         // No es necesario usar "exchange" porque no devuelve ResponseEntity
         // y por tanto devuelve un 200 OK aunque no se haya encontrado nada
-        Comment[] comments = restTemplate.getForObject("/api/v1/posts/{postId}/comments", Comment[].class, 1);
+        Comment[] comments = restTemplate.getForObject("/api/v1/posts/{postId}/comments", Comment[].class, 1000);
         Assertions.assertEquals(5, comments.length);
+        Assertions.assertEquals("Creighton", comments[0].getName());
     }
 
     @Test
@@ -88,7 +83,7 @@ public class CommentIntegrationTests {
         HttpEntity<CommentDto> entity = new HttpEntity<>(c,header);
 
         ResponseEntity<CommentDto> response = restTemplate.exchange("/api/v1/posts/{postId}/comments",
-                HttpMethod.POST, entity, CommentDto.class, 1);
+                HttpMethod.POST, entity, CommentDto.class, 1000);
 
         Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
         Assertions.assertEquals("name", Objects.requireNonNull(response.getBody()).getName());
@@ -114,7 +109,7 @@ public class CommentIntegrationTests {
                 HttpMethod.GET,
                 entity,
                 CommentDto.class,
-                1,1);
+                1000,1);
 
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertEquals("Creighton", Objects.requireNonNull(response.getBody()).getName());
@@ -142,7 +137,7 @@ public class CommentIntegrationTests {
                 HttpMethod.PUT,
                 entity,
                 CommentDto.class,
-                1,1);
+                1000,1);
 
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertEquals("updated name", Objects.requireNonNull(response.getBody()).getName());
@@ -179,14 +174,23 @@ public class CommentIntegrationTests {
     @Test
     void deleteComment_Valid_Test(){
         HttpEntity<HttpHeaders> entity = new HttpEntity<>(header);
+        Optional<Post> pOpt = postRepository.findById(1000L);
+        Post p = pOpt.get();
+        Comment comment = mapper.map(c, Comment.class);
+
+        p.setComments(Set.of(comment));
 
         ResponseEntity<String> response = restTemplate.exchange("/api/v1/posts/{postId}/comments/{id}",
                 HttpMethod.DELETE,
                 entity,
                 String.class,
-                1,1);
+                1000,1);
+
+        boolean matches = p.getComments().stream().anyMatch(commentInPost -> commentInPost.getId() == 1);
 
         Assertions.assertEquals(HttpStatus.OK,response.getStatusCode());
+        // Falla porque no se borra de la tabla de Posts, aunque sí de la de Comments
+        Assertions.assertFalse(matches);
     }
 
     @Test

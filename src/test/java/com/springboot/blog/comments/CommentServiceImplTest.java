@@ -18,9 +18,11 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -32,7 +34,7 @@ class CommentServiceImplTest {
     @Mock
     static PostRepository postRepository;
     static ModelMapper mapper = new ModelMapper();
-    static Post p = Mockito.mock(Post.class);
+    static Post p = new Post();
     static Comment comment = new Comment();
     static CommentDto c = new CommentDto();
 
@@ -46,9 +48,12 @@ class CommentServiceImplTest {
         c.setBody("Comment body");
         c.setEmail("email@email.com");
 
+        p.setId(1L);
+
         comment = mapper.map(c, Comment.class);
 
         comment.setPost(p);
+        p.setComments(Set.of(comment));
     }
     @Test
     void createCommentTest() {
@@ -65,7 +70,9 @@ class CommentServiceImplTest {
 
     @Test
     void createComment_WhenPostNotFound_Test(){
-        //perezote mañana lo hago
+        Post wrongPost = Mockito.mock(Post.class);
+
+        assertThrows(ResourceNotFoundException.class, () -> commentService.createComment(wrongPost.getId(),c));
     }
 
     @Test
@@ -104,12 +111,16 @@ class CommentServiceImplTest {
 
     @Test
     void getCommentById_WhenPostNotFound_Test(){
-        //pa mañana
+        Post wrongPost = Mockito.mock(Post.class);
+
+        assertThrows(ResourceNotFoundException.class, () -> commentService.getCommentById(wrongPost.getId(), c.getId()));
     }
 
     @Test
     void getCommentById_WhenCommentNotFound_Test(){
-        //pa mañana
+        Comment wrongComment = Mockito.mock(Comment.class);
+
+        assertThrows(ResourceNotFoundException.class, ()-> commentService.getCommentById(p.getId(), wrongComment.getId()));
     }
 
     @Test
@@ -168,6 +179,8 @@ class CommentServiceImplTest {
         commentService.deleteComment(p.getId(),comment.getId());
 
         verify(commentRepository,times(1)).delete(comment);
+        // No se borra de la tabla Posts
+        assertFalse(p.getComments().stream().anyMatch(commentInPost -> commentInPost.getId() == comment.getId()));
     }
 
     @Test
@@ -184,10 +197,15 @@ class CommentServiceImplTest {
 
     @Test
     void deleteComment_WhenPostNotFound_Test() {
-        //en verdad no estoy ni seguro de si esto es necesario
+        Post postNotFound = Mockito.mock(Post.class);
+
+        assertThrows(ResourceNotFoundException.class, () -> commentService.deleteComment(postNotFound.getId(), c.getId()));
     }
 
     @Test
     void deleteComment_WhenCommentNotFound_Test() {
+        Comment commentNotFound = Mockito.mock(Comment.class);
+
+        assertThrows(ResourceNotFoundException.class, () -> commentService.deleteComment(p.getId(), commentNotFound.getId()));
     }
 }
