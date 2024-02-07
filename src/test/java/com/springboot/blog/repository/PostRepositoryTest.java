@@ -22,7 +22,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @ActiveProfiles({"test"})
 //@ActiveProfiles({"postgres", "spring-data-jpa"})
 @Testcontainers
-@Sql(value = "classpath:insert-posts.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(value = "classpath:import-category.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(value = "classpath:import-posts.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 class PostRepositoryTest {
 
     @Autowired
@@ -33,11 +34,13 @@ class PostRepositoryTest {
     static PostgreSQLContainer postgres = new PostgreSQLContainer(DockerImageName.parse("postgres:16-alpine"))
             .withUsername("postgres")
             .withPassword("12345678")
-            .withDatabaseName("myblog");
+            .withDatabaseName("test");
     @Test
     void findByCategoryId() {
 
         List<Post> posts = postRepository.findByCategoryId(1L);
+
+        System.out.println(posts);
 
         assertEquals(1, posts.size());
 
