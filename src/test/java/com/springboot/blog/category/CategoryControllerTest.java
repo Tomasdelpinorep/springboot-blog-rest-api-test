@@ -77,8 +77,19 @@ public class CategoryControllerTest {
 
     }
     @Test
-    @WithMockUser(username = "pepeillo", roles = {"USER", "ADMIN"})
-    void getCategoryByIdTestController(){
+    void getCategoryByIdTestController() throws Exception {
+        Category category= new Category();
+        Long categoryId= 1L;
+        category.setId(categoryId);
+        CategoryDto categoryDto= new CategoryDto();
+        categoryDto.setId(category.getId());
+        CategoryDto cat1= categoryService.getCategory(categoryDto.getId());
+
+        when(categoryService.getCategory(categoryId)).thenReturn(cat1);
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/categories/{id}", categoryId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
 
     }
     @Test
