@@ -55,20 +55,29 @@ class AuthControllerTest {
     }
 
     @Test
-    void login() throws Exception {
+    void loginTest() throws Exception {
         String token = "wasd";
         Mockito.when(authService.login(Mockito.any())).thenReturn(token);
 
         mockMvc.perform(post("/api/auth/login")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .contentType(objectMapper.writeValueAsString(user))
-                ).andExpect(status().isCreated())
+                    .content(objectMapper.writeValueAsString(loginDto))
+                ).andExpect(status().isOk())
                 .andExpect(jsonPath("$", notNullValue()))
-                .andExpect(jsonPath("$.username", is(user.getUsername())));
+                .andExpect(jsonPath("$.accessToken", is(token)));
 
     }
 
     @Test
-    void register() {
+    void registerTest() throws Exception {
+        String response = "User registered successfully!.";
+        Mockito.when(authService.register(Mockito.any())).thenReturn(response);
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerDto))
+                ).andExpect(status().isCreated())
+                .andExpect(jsonPath("$", notNullValue()))
+                .andExpect(jsonPath("$", is(response)));
     }
 }
