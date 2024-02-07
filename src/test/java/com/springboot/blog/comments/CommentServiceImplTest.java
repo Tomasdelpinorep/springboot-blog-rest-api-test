@@ -190,10 +190,15 @@ class CommentServiceImplTest {
 
     @Test
     void deleteComment_WhenPostNotFound_Test() {
-        //en verdad no estoy ni seguro de si esto es necesario
+        Post postNotFound = Mockito.mock(Post.class);
+
+        assertThrows(ResourceNotFoundException.class, () -> commentService.deleteComment(postNotFound.getId(), c.getId()));
     }
 
     @Test
     void deleteComment_WhenCommentNotFound_Test() {
+        Comment commentNotFound = Mockito.mock(Comment.class);
+
+        assertThrows(ResourceNotFoundException.class, () -> commentService.deleteComment(p.getId(), commentNotFound.getId()));
     }
 }

@@ -73,6 +73,7 @@ public class CommentIntegrationTests {
         // y por tanto devuelve un 200 OK aunque no se haya encontrado nada
         Comment[] comments = restTemplate.getForObject("/api/v1/posts/{postId}/comments", Comment[].class, 1);
         Assertions.assertEquals(5, comments.length);
+        Assertions.assertEquals("Creighton", comments[0].getName());
     }
 
     @Test
