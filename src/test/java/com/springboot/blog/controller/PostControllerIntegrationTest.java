@@ -29,6 +29,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -96,16 +97,17 @@ class PostControllerIntegrationTest {
         assertEquals(HttpStatus.CREATED, result.getStatusCode());
     }
 
+    @Test
     void createPostBadRequest() {
-//        HttpHeaders auth = new HttpHeaders();
-//        auth.setBearerAuth(token);
-//        HttpEntity<PostDto> entity = new HttpEntity<>(postDto, auth);
-//
-//        ResponseEntity<PostDto> result = restTemplate.exchange("/api/posts",
-//                HttpMethod.POST, entity, PostDto.class
-//        );
-//
-//        assertEquals(HttpStatus.CREATED, result.getStatusCode());
+        HttpHeaders auth = new HttpHeaders();
+        auth.setBearerAuth(token);
+        HttpEntity<PostDto> entity = new HttpEntity<>(new PostDto(), auth);
+
+        ResponseEntity<PostDto> result = restTemplate.exchange("/api/posts",
+                HttpMethod.POST, entity, PostDto.class
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
     }
 
     @Test
@@ -144,20 +146,70 @@ class PostControllerIntegrationTest {
         assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
     }
 
-//    @Test
-//    void updatePost() {
-//
-//       HttpHeaders auth = new HttpHeaders();
-//       auth.setBearerAuth(token);
-//       HttpEntity<>
-//
-//    }
+    @Test
+    void updatePost() {
+
+       HttpHeaders auth = new HttpHeaders();
+       auth.setBearerAuth(token);
+       HttpEntity<PostDto> entity = new HttpEntity<>(postDto, auth);
+
+       ResponseEntity<PostDto> result = restTemplate.exchange("/api/posts/{id}",
+               HttpMethod.PUT, entity, PostDto.class, 1000
+               );
+
+       assertEquals(HttpStatus.OK, result.getStatusCode());
+
+    }
+
+    @Test
+    void updatePostNotFound() {
+
+        HttpHeaders auth = new HttpHeaders();
+        auth.setBearerAuth(token);
+        HttpEntity<PostDto> entity = new HttpEntity<>(postDto, auth);
+
+        ResponseEntity<PostDto> result = restTemplate.exchange("/api/posts/{id}",
+                HttpMethod.PUT, entity, PostDto.class, 10000
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
+    }
+
+    @Test
+    void updatePostBadRequest() {
+
+        HttpHeaders auth = new HttpHeaders();
+        auth.setBearerAuth(token);
+        HttpEntity<PostDto> entity = new HttpEntity<>(new PostDto(), auth);
+
+        ResponseEntity<PostDto> result = restTemplate.exchange("/api/posts/{id}",
+                HttpMethod.PUT, entity, PostDto.class, 1000
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+    }
 
     @Test
     void deletePost() {
+        HttpHeaders auth = new HttpHeaders();
+        auth.setBearerAuth(token);
+        HttpEntity<String> entity = new HttpEntity<>(auth);
+
+        ResponseEntity<String> result = restTemplate.exchange("/api/posts/{id}",
+                HttpMethod.DELETE, entity, String.class, 1000
+                );
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
     }
 
     @Test
     void getPostsByCategory() {
+        HttpEntity<List<PostDto>> entity = new HttpEntity<>(List.of(postDto));
+
+        ResponseEntity<PostDto[]> result = restTemplate.exchange("/api/posts/category/{id}",
+                HttpMethod.GET, entity, PostDto[].class, 1
+                );
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
     }
 }
