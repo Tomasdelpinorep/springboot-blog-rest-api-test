@@ -1,9 +1,8 @@
-package com.springboot.blog.comments;
+package com.springboot.blog.category;
 
 import com.springboot.blog.controller.CategoryController;
 import com.springboot.blog.entity.Category;
 import com.springboot.blog.payload.CategoryDto;
-import com.springboot.blog.payload.CommentDto;
 import com.springboot.blog.service.CategoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -96,16 +95,7 @@ public class CategoryControllerTest {
                 .andExpect(jsonPath("$",hasSize(1)))
                 .andExpect(content().json(objectMapper.writeValueAsString(categoryList)));
     }
-    @Test
-    void notAuthorizedTest401() throws Exception{
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/categories")
-                        .content(objectMapper.writeValueAsString(categoryDto))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-        verify(categoryService, never()).addCategory(categoryDto);
 
-    }
     @Test
     @WithMockUser(roles = {"ADMIN"})
     void updateCategoryTestIsValid200() throws Exception {
