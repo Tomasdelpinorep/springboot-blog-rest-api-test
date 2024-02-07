@@ -1,0 +1,1 @@
+insert into categories (id, name, description) values (1, 'Technology', 'Posts related to technology');
