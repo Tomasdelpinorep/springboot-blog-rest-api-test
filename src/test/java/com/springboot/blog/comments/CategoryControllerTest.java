@@ -1,11 +1,14 @@
 package com.springboot.blog.comments;
 
 import com.springboot.blog.controller.CategoryController;
+import com.springboot.blog.entity.Category;
 import com.springboot.blog.payload.CategoryDto;
+import com.springboot.blog.payload.CommentDto;
 import com.springboot.blog.service.CategoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,11 +20,13 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
 
+import java.util.List;
+
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc
 @SpringBootTest
@@ -42,6 +47,8 @@ public class CategoryControllerTest {
 
     private CategoryDto categoryDto;
 
+    private Category c;
+
     @BeforeEach
     public void setUp(){
         categoryDto= new CategoryDto(1L,"Name","description");
@@ -49,7 +56,7 @@ public class CategoryControllerTest {
 
     @Test
     @WithMockUser(username = "pepeillo", roles = {"ADMIN"})
-    void createCategoryTestControllerIsValid() throws Exception{
+    void createCategoryTestControllerIsValid201() throws Exception{
         when(categoryService.addCategory(categoryDto)).thenReturn(categoryDto);
 
         mockMvc.perform(post("/api/v1/categories")
@@ -76,6 +83,20 @@ public class CategoryControllerTest {
 
     }
     @Test
+    void getCategories() throws Exception {
+        CategoryDto categoryDto = new CategoryDto(1L, "name", "description");
+        List<CategoryDto> categoryList = List.of(
+                categoryDto
+        );
+        Mockito.when(categoryService.getAllCategories()).thenReturn(categoryList);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/categories")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$",hasSize(1)))
+                .andExpect(content().json(objectMapper.writeValueAsString(categoryList)));
+    }
+    @Test
     void notAuthorizedTest401() throws Exception{
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/categories")
                         .content(objectMapper.writeValueAsString(categoryDto))
@@ -85,6 +106,25 @@ public class CategoryControllerTest {
         verify(categoryService, never()).addCategory(categoryDto);
 
     }
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    void updateCategoryTestIsValid200() throws Exception {
+        CategoryDto updateCategory = new CategoryDto();
+        updateCategory.setName("new name");
+        updateCategory.setDescription("new description");
+
+        when(categoryService.updateCategory( Mockito.any(CategoryDto.class), anyLong()))
+                .thenReturn(updateCategory);
+
+        mockMvc.perform(put("/api/v1/categories/{id}", c.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateCategory)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$",notNullValue()))
+                .andExpect(jsonPath("$.description",is("new description")));
+
+    }
+
     @Test
     @WithMockUser(roles = {"ADMIN"})
     void deleteCategoryTest200() throws Exception {
