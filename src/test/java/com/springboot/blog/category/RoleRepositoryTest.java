@@ -1,6 +1,7 @@
-package com.springboot.blog.repository;
+package com.springboot.blog.category;
 
 import com.springboot.blog.entity.Role;
+import com.springboot.blog.repository.RoleRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
