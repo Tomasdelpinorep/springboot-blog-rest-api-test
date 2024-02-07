@@ -18,9 +18,11 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -32,7 +34,7 @@ class CommentServiceImplTest {
     @Mock
     static PostRepository postRepository;
     static ModelMapper mapper = new ModelMapper();
-    static Post p = Mockito.mock(Post.class);
+    static Post p = new Post();
     static Comment comment = new Comment();
     static CommentDto c = new CommentDto();
 
@@ -46,9 +48,12 @@ class CommentServiceImplTest {
         c.setBody("Comment body");
         c.setEmail("email@email.com");
 
+        p.setId(1L);
+
         comment = mapper.map(c, Comment.class);
 
         comment.setPost(p);
+        p.setComments(Set.of(comment));
     }
     @Test
     void createCommentTest() {
@@ -174,6 +179,8 @@ class CommentServiceImplTest {
         commentService.deleteComment(p.getId(),comment.getId());
 
         verify(commentRepository,times(1)).delete(comment);
+        // No se borra de la tabla Posts
+        assertFalse(p.getComments().stream().anyMatch(commentInPost -> commentInPost.getId() == comment.getId()));
     }
 
     @Test
