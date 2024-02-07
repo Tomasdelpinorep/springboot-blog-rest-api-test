@@ -38,10 +38,8 @@ class AuthIntegrationTest {
     @Autowired
     JwtTokenProvider jwtTokenProvider;
 
-    String token;
     RegisterDto registerDto;
     LoginDto loginDto;
-    ModelMapper modelMapper = new ModelMapper();
     HttpHeaders header = new HttpHeaders();
 
     @BeforeEach
@@ -53,20 +51,73 @@ class AuthIntegrationTest {
 
         registerDto.setName("Andres");
         registerDto.setEmail("andres@gmail.com");
-        registerDto.setUsername("andresito");
         registerDto.setPassword("123456789");
 
+        //loginDto.setUsernameOrEmail("pepeillo");
+        //loginDto.setPassword("123456789");
+    }
+
+    @Test
+    void loginTest() {
         loginDto.setUsernameOrEmail("pepeillo");
         loginDto.setPassword("123456789");
+        header.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<LoginDto> request = new HttpEntity<>(loginDto, header);
+        ResponseEntity<JWTAuthResponse> result = testRestTemplate.postForEntity("/api/auth/login", request, JWTAuthResponse.class);
+        Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
+    }
+
+    @Test
+    void loginBadPasswordTest() {
+        loginDto.setUsernameOrEmail("pepeillo");
+        loginDto.setPassword("33");
+        header.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<LoginDto> request = new HttpEntity<>(loginDto, header);
+        ResponseEntity<JWTAuthResponse> result = testRestTemplate.postForEntity("/api/auth/login", request, JWTAuthResponse.class);
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
+    }
+
+    @Test
+    void loginBadUsernameTest() {
+        loginDto.setUsernameOrEmail("Pepon");
+        header.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<LoginDto> request = new HttpEntity<>(loginDto, header);
+        ResponseEntity<JWTAuthResponse> result = testRestTemplate.postForEntity("/api/auth/login", request, JWTAuthResponse.class);
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
+    }
+
+    @Test
+    void loginNullTest() {
+        header.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<LoginDto> request = new HttpEntity<>(loginDto, header);
+        ResponseEntity<JWTAuthResponse> result = testRestTemplate.postForEntity("/api/auth/login", request, JWTAuthResponse.class);
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
     }
 
     @Test
     void registerTest() {
-        HttpEntity<RegisterDto> entity = new HttpEntity<>(registerDto);
-        ResponseEntity<String> result = testRestTemplate.exchange("/api/auth/register",
-                HttpMethod.POST, entity, String.class
-        );
+        registerDto.setUsername("andresito");
+        header.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<RegisterDto> request = new HttpEntity<>(registerDto, header);
+        ResponseEntity<String> result = testRestTemplate.postForEntity("/api/auth/register", request, String.class);
         Assertions.assertEquals(HttpStatus.CREATED, result.getStatusCode());
+    }
+
+    @Test
+    void registerAlreadyExistTest() {
+        registerDto.setUsername("pepeillo");
+        header.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<RegisterDto> request = new HttpEntity<>(registerDto, header);
+        ResponseEntity<String> result = testRestTemplate.postForEntity("/api/auth/register", request, String.class);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+    }
+
+    @Test
+    void registerNullTest() {
+        header.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<RegisterDto> request = new HttpEntity<>(registerDto, header);
+        ResponseEntity<String> result = testRestTemplate.postForEntity("/api/auth/register", request, String.class);
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
     }
 
 

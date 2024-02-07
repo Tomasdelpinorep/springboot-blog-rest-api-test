@@ -36,17 +36,6 @@ class AuthControllerTest {
     static LoginDto loginDto = new LoginDto();
     static RegisterDto registerDto = new RegisterDto();
 
-    @BeforeEach
-    void setUp() {
-        registerDto.setName("Andres");
-        registerDto.setEmail("andres@gmail.com");
-        registerDto.setUsername("andresito");
-        registerDto.setPassword("123456789");
-
-        loginDto.setUsernameOrEmail("pepeillo");
-        loginDto.setPassword("123456789");
-    }
-
     @Test
     void loginTest() throws Exception {
         String token = "wasd";
