@@ -1,6 +1,6 @@
 package com.springboot.blog.repository;
 
-import com.springboot.blog.entity.Post;
+import com.springboot.blog.entity.Role;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -13,36 +13,34 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles({"test"})
-//@ActiveProfiles({"postgres", "spring-data-jpa"})
 @Testcontainers
-@Sql(value = "classpath:import-category.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-@Sql(value = "classpath:import-posts.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-class PostRepositoryTest {
-
+@Sql(value = "classpath:insert-roles.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+public class RoleRepositoryTest {
     @Autowired
-    PostRepository postRepository;
+    RoleRepository repository;
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer(DockerImageName.parse("postgres:16-alpine"))
-            .withUsername("postgres")
-            .withPassword("12345678")
-            .withDatabaseName("test");
+    static PostgreSQLContainer postgres= new PostgreSQLContainer(DockerImageName.parse("postgres:16-alpine"))
+            .withUsername("testUser")
+            .withPassword("testSecret")
+            .withDatabaseName("testDatabase");
+
     @Test
-    void findByCategoryId() {
+    void findByNameTest(){
+        Optional<Role> findFalse= repository.findByName("usuario");
+        Optional<Role> findTrue= repository.findByName("ROLE_USER");
 
-        List<Post> posts = postRepository.findByCategoryId(1L);
-
-        System.out.println(posts);
-
-        assertEquals(1, posts.size());
-
+        assertTrue(findFalse.isEmpty(), "Not found");
+        assertTrue(findTrue.isPresent(),"search found");
     }
+
 }
