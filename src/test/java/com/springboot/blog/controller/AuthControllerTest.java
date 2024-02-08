@@ -1,14 +1,12 @@
 package com.springboot.blog.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springboot.blog.entity.User;
 import com.springboot.blog.payload.LoginDto;
 import com.springboot.blog.payload.RegisterDto;
 import com.springboot.blog.service.impl.AuthServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,24 +33,8 @@ class AuthControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;
-
-    static ModelMapper modelMapper = new ModelMapper();
-    static User user = new User();
     static LoginDto loginDto = new LoginDto();
     static RegisterDto registerDto = new RegisterDto();
-
-    @BeforeEach
-    void setUp() {
-        registerDto.setName("Andres");
-        registerDto.setEmail("andres@gmail.com");
-        registerDto.setUsername("andresito");
-        registerDto.setPassword("123456789");
-
-        loginDto.setUsernameOrEmail("pepeillo");
-        loginDto.setPassword("123456789");
-
-        user = modelMapper.map(user, User.class);
-    }
 
     @Test
     void loginTest() throws Exception {
